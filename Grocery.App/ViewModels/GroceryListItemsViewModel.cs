@@ -32,10 +32,18 @@ namespace Grocery.App.ViewModels
             Load(groceryList.Id);
         }
 
+        //THIS ONE TOO
         private void Load(int id)
         {
             MyGroceryListItems.Clear();
-            foreach (var item in _groceryListItemsService.GetAllOnGroceryListId(id)) MyGroceryListItems.Add(item);
+            foreach (var item in _groceryListItemsService.GetAllOnGroceryListId(id))
+                MyGroceryListItems.Add(item);
+
+            // Populate filtered list initially with all items
+            FilteredGroceryListItems.Clear();
+            foreach (var item in MyGroceryListItems)
+                FilteredGroceryListItems.Add(item);
+
             GetAvailableProducts();
         }
 
@@ -68,6 +76,30 @@ namespace Grocery.App.ViewModels
             _productService.Update(product);
             AvailableProducts.Remove(product);
             OnGroceryListChanged(GroceryList);
+        }
+        //THIS ONE 
+        public ObservableCollection<GroceryListItem> FilteredGroceryListItems { get; set; } = new();
+
+        //THIS ONE
+        public void FilterGroceryItems(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                FilteredGroceryListItems.Clear();
+                foreach (var item in MyGroceryListItems)
+                    FilteredGroceryListItems.Add(item);
+                return;
+            }
+
+            var lower = query.ToLowerInvariant();
+
+            var filtered = MyGroceryListItems
+                .Where(item => item.Product?.Name?.ToLowerInvariant().Contains(lower) == true)
+                .ToList();
+
+            FilteredGroceryListItems.Clear();
+            foreach (var item in filtered)
+                FilteredGroceryListItems.Add(item);
         }
 
         [RelayCommand]
